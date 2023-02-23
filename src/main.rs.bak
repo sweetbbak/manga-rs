@@ -1,0 +1,119 @@
+// use reqwest::header::USER_AGENT;
+// use select::document::Document;
+// use select::predicate::Name;
+// use std::env;
+
+// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//     let args: Vec<String> = env::args().collect();
+//     if args.len() != 2 && args.len() != 3 {
+//         println!("Usage: rust-script <url> [--list-images]");
+//         return Ok(());
+//     }
+//     let url = &args[1];
+//     let list_images = args.get(2).map_or(false, |arg| arg == "--list-images");
+
+//     let client = reqwest::blocking::Client::new();
+//     let res = client.get(url).header(USER_AGENT, "rust-script").send()?;
+//     let body = res.text()?;
+//     let document = Document::from(body.as_str());
+
+//     if list_images {
+//         let images: Vec<_> = document
+//             .find(Name("img"))
+//             .map(|node| node.attr("src").unwrap_or(""))
+//             .collect();
+//         println!("{:?}", images);
+//     }
+
+//     Ok(())
+// }
+
+// STEP 2
+// use reqwest::header::USER_AGENT;
+// use select::document::Document;
+// use select::predicate::Name;
+// use std::env;
+
+// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//     let args: Vec<String> = env::args().collect();
+//     if args.len() != 2 && args.len() != 3 {
+//         println!("Usage: rust-script <url> [--list-images]");
+//         return Ok(());
+//     }
+//     let url = &args[1];
+//     let list_images = args.get(2).map_or(false, |arg| arg == "--list-images");
+
+//     let client = reqwest::blocking::Client::new();
+//     let res = client.get(url).header(USER_AGENT, "rust-script").send()?;
+//     let body = res.text()?;
+//     let document = Document::from(body.as_str());
+
+//     if list_images {
+//         let images: Vec<_> = document
+//             .find(Name("img"))
+//             .map(|node| node.attr("src").unwrap_or(""))
+//             .collect();
+//         println!("{:?}", images);
+//     } else {
+//         println!("{}", body);
+//     }
+
+//     Ok(())
+// }
+use reqwest::header::USER_AGENT;
+use select::document::Document;
+use select::predicate::Name;
+use std::env;
+use std::fs;
+use std::path::Path;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 && args.len() != 3 && args.len() != 4 {
+        println!("Usage: rust-script <url> [--list-images] [--download-images]");
+        return Ok(());
+    }
+    let url = &args[1];
+    let list_images = args.get(2).map_or(false, |arg| arg == "--list-images");
+    let download_images = args.get(3).map_or(false, |arg| arg == "--download-images");
+
+    let client = reqwest::blocking::Client::new();
+    let res = client.get(url).header(USER_AGENT, "rust-script").send()?;
+    let body = res.text()?;
+    let document = Document::from(body.as_str());
+
+    if list_images {
+        let images: Vec<_> = document
+            .find(Name("img"))
+            .map(|node| node.attr("src").unwrap_or(""))
+            .collect();
+        println!("{:?}", images);
+    }
+
+    if download_images {
+        let dir_name = "images";
+        let dir_path = Path::new(dir_name);
+
+        if !dir_path.exists() {
+            fs::create_dir(dir_path)?;
+        }
+
+        for node in document.find(Name("img")) {
+            if let Some(img_src) = node.attr("src") {
+                let img_url = reqwest::Url::parse(img_src)?;
+                let img_name = img_url
+                    .path_segments()
+                    .and_then(|segments| segments.last())
+                    .unwrap_or("");
+                let img_path = dir_path.join(img_name);
+
+                let mut img_file = fs::File::create(&img_path)?;
+                let mut img_res = client.get(img_src).send()?;
+                img_res.copy_to(&mut img_file)?;
+                println!("Downloaded {} to {:?}", img_src, img_path);
+            }
+        }
+    }
+
+    Ok(())
+}
