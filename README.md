@@ -36,7 +36,9 @@ its not very reusable or versatile and once the website changes, everything brea
 I will be trying to implement the ability to pass flags to the program that would allow you to pass html tags
 that could then be parsed.
 ex:
-```manga-rs https://website.com --parse-block h3.reader-container>a --download-images
+```
+manga-rs https://website.com --parse-block h3.reader-container>a --download-images
+
 ```
 This would download and zip all images that are within the specified code block.
 this works surprisingly well as there arent usually alot of images on a manga page and the images that we want are
