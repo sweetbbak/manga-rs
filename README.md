@@ -1,12 +1,13 @@
 ## MANGA-RS
 
 A very simple CLI tool that is very much a work in progress with the intended use case to parse manga websites 
-without relying heavily on html tags which are prone to breaking and do not allow for much diversity of options.
+without relying heavily on hardcoded html tags which are prone to breaking and do not allow for much diversity of options.
 Many web scraping tools require constant maintenance to ensure they are not broken and it can be quite the annoying
 endeavor to try and debug a tool that you didn't write and have no idea where along the line things broke.
 
 # Installing
-```git clone https://github.com/sweetbbak/manga-rs.git 
+```
+ git clone https://github.com/sweetbbak/manga-rs.git 
  cd manga-rs
 
  # Returns a list of images in the html
