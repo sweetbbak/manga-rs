@@ -41,14 +41,14 @@ let args: Vec<String> = env::args().collect();
             return Ok(());
         }
         if !Path::new(&output_dir).exists() {
-            fs::create_dir_all(output_dir.clone())?;
-            println!("Directory '{}' created for output.", output_dir);
+            fs::create_dir_all(&output_dir)?;
+            println!("Directory '{}' created for output.", &output_dir);
         }
 
         for node in document.find(Name("img")) {
             if let Some(img_src) = node.attr("src") {
                 let filename = Path::new(img_src).file_name().unwrap();
-                let output_path = PathBuf::from(output_dir.clone()).join(filename);
+                let output_path = PathBuf::from(&output_dir).join(filename);
 
                 let mut output_file = File::create(output_path)?;
                 let img_data = client.get(img_src).send()?.bytes()?;
